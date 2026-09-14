@@ -11,38 +11,49 @@ import java.util.List;
  */
 public class PricingCalculator {
 
+    private static final Integer MAX_QUANTITY = 10;
+    private static final BigDecimal PRICE_COEFFICIENT = BigDecimal.valueOf(0.95);
+    private static final BigDecimal VIP_DISCOUNT_RATE = BigDecimal.valueOf(0.9);
+    private static final BigDecimal WHOLESALE_DISCOUNT_RATE = BigDecimal.valueOf(0.85);
+    private static final BigDecimal COUPON_SAVE10 = BigDecimal.TEN;
+    private static final BigDecimal COUPON_SAVE20PERCENT = BigDecimal.valueOf(0.8);
+    private static final BigDecimal MAX_TOTAL_FOR_EXTRA_DISCOUNT = BigDecimal.valueOf(1000);
+    private static final BigDecimal MAX_TOTAL_COEFFICIENT = BigDecimal.valueOf(0.98);
+    private static final BigDecimal MIN_TOTAL = BigDecimal.ZERO;
+    private static final Integer LOWER_ENTRY_THRESHOLD = 0;
+
     public record LineItem(BigDecimal price, int quantity) {
     }
 
     public BigDecimal calculateOrderTotal(List<LineItem> items, String customerType, String couponCode) {
-        BigDecimal total = BigDecimal.ZERO;
+        BigDecimal total = MIN_TOTAL;
 
         for (LineItem item : items) {
             BigDecimal linePrice = item.price().multiply(BigDecimal.valueOf(item.quantity()));
-            if (item.quantity() > 10) {
-                linePrice = linePrice.multiply(BigDecimal.valueOf(0.95));
+            if (item.quantity() > MAX_QUANTITY) {
+                linePrice = linePrice.multiply(PRICE_COEFFICIENT);
             }
             total = total.add(linePrice);
         }
 
         if ("vip".equals(customerType)) {
-            total = total.multiply(BigDecimal.valueOf(0.9));
+            total = total.multiply(VIP_DISCOUNT_RATE);
         } else if ("wholesale".equals(customerType)) {
-            total = total.multiply(BigDecimal.valueOf(0.85));
+            total = total.multiply(WHOLESALE_DISCOUNT_RATE);
         }
 
         if ("SAVE10".equals(couponCode)) {
-            total = total.subtract(BigDecimal.TEN);
+            total = total.subtract(COUPON_SAVE10);
         } else if ("SAVE20PERCENT".equals(couponCode)) {
-            total = total.multiply(BigDecimal.valueOf(0.8));
+            total = total.multiply(COUPON_SAVE20PERCENT);
         }
 
-        if (total.compareTo(BigDecimal.ZERO) < 0) {
-            total = BigDecimal.ZERO;
+        if (total.compareTo(MIN_TOTAL) < LOWER_ENTRY_THRESHOLD) {
+            total = MIN_TOTAL;
         }
 
-        if (total.compareTo(BigDecimal.valueOf(1000)) > 0) {
-            total = total.multiply(BigDecimal.valueOf(0.98));
+        if (total.compareTo(MAX_TOTAL_FOR_EXTRA_DISCOUNT) > LOWER_ENTRY_THRESHOLD) {
+            total = total.multiply(MAX_TOTAL_COEFFICIENT);
         }
 
         return total.setScale(2, RoundingMode.HALF_UP);
