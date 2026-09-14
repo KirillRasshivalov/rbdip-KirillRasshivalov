@@ -5,6 +5,8 @@ import com.rbdip.bookstore.product.ProductRepository;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.rbdip.bookstore.service.EmailSenderService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,27 +21,25 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
     private final PricingCalculator pricingCalculator = new PricingCalculator();
+    private final EmailSenderService emailSenderService;
+    private final OrderValidator orderValidator;
 
     public OrderService(
             ProductRepository productRepository,
             OrderRepository orderRepository,
-            OrderItemRepository orderItemRepository) {
+            OrderItemRepository orderItemRepository,
+            EmailSenderService emailSenderService,
+            OrderValidator orderValidator) {
         this.productRepository = productRepository;
         this.orderRepository = orderRepository;
         this.orderItemRepository = orderItemRepository;
+        this.emailSenderService = emailSenderService;
+        this.orderValidator = orderValidator;
     }
 
     @Transactional
     public Order createOrder(CreateOrderRequest request) {
-        if (request.customerFullName() == null || request.customerFullName().isBlank()) {
-            throw new IllegalArgumentException("customerFullName is required");
-        }
-        if (request.customerAddress() == null || request.customerAddress().isBlank()) {
-            throw new IllegalArgumentException("customerAddress is required");
-        }
-        if (request.items() == null || request.items().isEmpty()) {
-            throw new IllegalArgumentException("order must contain at least one item");
-        }
+        orderValidator.validate(request);
 
         List<Product> products = new ArrayList<>();
         List<PricingCalculator.LineItem> lineItems = new ArrayList<>();
@@ -47,9 +47,7 @@ public class OrderService {
             Product product = productRepository.findById(raw.productId())
                     .orElseThrow(() -> new IllegalArgumentException("product " + raw.productId() + " not found"));
             int quantity = raw.quantity() == null ? 1 : raw.quantity();
-            if (quantity <= 0) {
-                throw new IllegalArgumentException("quantity must be positive");
-            }
+            orderValidator.checkQuantity(quantity);
             products.add(product);
             lineItems.add(new PricingCalculator.LineItem(product.getPrice(), quantity));
         }
@@ -67,15 +65,9 @@ public class OrderService {
             orderItemRepository.save(new OrderItem(order.getId(), product.getName(), product.getPrice(), quantity));
         }
 
-        sendConfirmationEmail(request.customerFullName(), order.getId(), total);
+        emailSenderService.sendConfirmationEmail(request.customerFullName(), order.getId(), total);
 
         return order;
     }
 
-    private void sendConfirmationEmail(String customerName, Long orderId, BigDecimal total) {
-        // Реальный почтовый транспорт не настроен в учебном проекте - здесь
-        // просто эмулируется побочный эффект отправки письма.
-        System.out.printf(
-                "[email] Dear %s, your order #%d for %s has been placed.%n", customerName, orderId, total);
-    }
 }
