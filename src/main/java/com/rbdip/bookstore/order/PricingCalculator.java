@@ -21,6 +21,10 @@ public class PricingCalculator {
     private static final BigDecimal MAX_TOTAL_COEFFICIENT = BigDecimal.valueOf(0.98);
     private static final BigDecimal MIN_TOTAL = BigDecimal.ZERO;
     private static final Integer LOWER_ENTRY_THRESHOLD = 0;
+    private static final String CUSTOMER_TYPE_VIP = "vip";
+    private static final String CUSTOMER_TYPE_WHOLESALE = "wholesale";
+    private static final String COUPON_CODE_SAVE10 = "SAVE10";
+    private static final String COUPON_CODE_SAVE20_PERCENT = "SAVE20PERCENT";
 
     public record LineItem(BigDecimal price, int quantity) {
     }
@@ -36,15 +40,15 @@ public class PricingCalculator {
             total = total.add(linePrice);
         }
 
-        if ("vip".equals(customerType)) {
+        if (CUSTOMER_TYPE_VIP.equals(customerType)) {
             total = total.multiply(VIP_DISCOUNT_RATE);
-        } else if ("wholesale".equals(customerType)) {
+        } else if (CUSTOMER_TYPE_WHOLESALE.equals(customerType)) {
             total = total.multiply(WHOLESALE_DISCOUNT_RATE);
         }
 
-        if ("SAVE10".equals(couponCode)) {
+        if (COUPON_CODE_SAVE10.equals(couponCode)) {
             total = total.subtract(COUPON_SAVE10);
-        } else if ("SAVE20PERCENT".equals(couponCode)) {
+        } else if (COUPON_CODE_SAVE20_PERCENT.equals(couponCode)) {
             total = total.multiply(COUPON_SAVE20PERCENT);
         }
 

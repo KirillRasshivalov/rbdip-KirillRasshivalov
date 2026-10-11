@@ -63,4 +63,16 @@ public class OrderItem {
     public Integer getQuantity() {
         return quantity;
     }
+
+    public BigDecimal lineTotal() {
+        return productPrice.multiply(BigDecimal.valueOf(quantity));
+    }
+
+    public boolean hasPositiveQuantity() {
+        return quantity != null && quantity > 0;
+    }
+
+    public boolean matchesProductName(String name) {
+        return productName != null && productName.equals(name);
+    }
 }

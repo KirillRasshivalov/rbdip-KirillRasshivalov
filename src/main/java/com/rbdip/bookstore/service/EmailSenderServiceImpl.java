@@ -1,15 +1,17 @@
 package com.rbdip.bookstore.service;
 
-import org.springframework.stereotype.Service;
-
 import java.math.BigDecimal;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 
 @Service
 public class EmailSenderServiceImpl implements EmailSenderService {
 
+    private static final Logger log = LoggerFactory.getLogger(EmailSenderServiceImpl.class);
+
     @Override
     public void sendConfirmationEmail(String customerName, Long orderId, BigDecimal total) {
-        System.out.printf(
-                "[email] Dear %s, your order #%d for %s has been placed.%n", customerName, orderId, total);
+        log.info("[email] Dear {}, your order #{} for {} has been placed.", customerName, orderId, total);
     }
 }

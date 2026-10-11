@@ -18,6 +18,10 @@ import java.time.Instant;
 @Table(name = "orders")
 public class Order {
 
+    private static final String STATUS_NEW = "new";
+    private static final String STATUS_COMPLETED = "completed";
+    private static final String STATUS_CANCELLED = "cancelled";
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -35,7 +39,7 @@ public class Order {
     private String status;
 
     @Column(name = "created_at", nullable = false)
-    private Instant createdAt = Instant.now();
+    private final Instant createdAt = Instant.now();
 
     protected Order() {
         // for JPA
@@ -70,5 +74,21 @@ public class Order {
 
     public Instant getCreatedAt() {
         return createdAt;
+    }
+
+    public boolean isNew() {
+        return STATUS_NEW.equals(status);
+    }
+
+    public boolean hasCustomerPhone() {
+        return customerPhone != null && !customerPhone.isBlank();
+    }
+
+    public void markCompleted() {
+        this.status = STATUS_COMPLETED;
+    }
+
+    public void markCancelled() {
+        this.status = STATUS_CANCELLED;
     }
 }
