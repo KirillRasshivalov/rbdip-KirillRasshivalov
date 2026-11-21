@@ -7,6 +7,7 @@ CREATE TABLE customers (
 
 ALTER TABLE orders ADD COLUMN customer_id BIGINT;
 
+
 DO $$
 DECLARE
     order_row RECORD;
