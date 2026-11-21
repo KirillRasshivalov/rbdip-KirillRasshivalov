@@ -1,17 +1,20 @@
 package com.rbdip.bookstore.order;
 
+import com.rbdip.bookstore.product.Product;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
 
 /**
- * Намеренно денормализовано: дублирует название и цену товара вместо
- * ссылки на products (product_id есть, но name/price скопированы на
- * момент заказа) - цель нормализации в ЛР2.
+ * Позиция заказа ссылается на products по product_id вместо
+ * дублирования названия и цены (нормализация схемы, ЛР2).
  */
 @Entity
 @Table(name = "order_items")
@@ -24,11 +27,9 @@ public class OrderItem {
     @Column(name = "order_id", nullable = false)
     private Long orderId;
 
-    @Column(name = "product_name", nullable = false)
-    private String productName;
-
-    @Column(name = "product_price", nullable = false)
-    private BigDecimal productPrice;
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
+    @JoinColumn(name = "product_id", nullable = false)
+    private Product product;
 
     @Column(nullable = false)
     private Integer quantity;
@@ -37,10 +38,9 @@ public class OrderItem {
         // for JPA
     }
 
-    public OrderItem(Long orderId, String productName, BigDecimal productPrice, Integer quantity) {
+    public OrderItem(Long orderId, Product product, Integer quantity) {
         this.orderId = orderId;
-        this.productName = productName;
-        this.productPrice = productPrice;
+        this.product = product;
         this.quantity = quantity;
     }
 
@@ -52,12 +52,16 @@ public class OrderItem {
         return orderId;
     }
 
+    public Product getProduct() {
+        return product;
+    }
+
     public String getProductName() {
-        return productName;
+        return product.getName();
     }
 
     public BigDecimal getProductPrice() {
-        return productPrice;
+        return product.getPrice();
     }
 
     public Integer getQuantity() {
@@ -65,7 +69,7 @@ public class OrderItem {
     }
 
     public BigDecimal lineTotal() {
-        return productPrice.multiply(BigDecimal.valueOf(quantity));
+        return product.getPrice().multiply(BigDecimal.valueOf(quantity));
     }
 
     public boolean hasPositiveQuantity() {
@@ -73,6 +77,6 @@ public class OrderItem {
     }
 
     public boolean matchesProductName(String name) {
-        return productName != null && productName.equals(name);
+        return product.getName() != null && product.getName().equals(name);
     }
 }
