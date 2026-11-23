@@ -3,6 +3,9 @@ package com.rbdip.bookstore.review;
 import com.rbdip.bookstore.order.OrderItemRepository;
 import com.rbdip.bookstore.order.OrderRepository;
 import java.util.List;
+
+import com.rbdip.bookstore.order.OrderService;
+import com.rbdip.bookstore.service.ApiService;
 import org.springframework.stereotype.Service;
 
 /**
@@ -17,24 +20,20 @@ import org.springframework.stereotype.Service;
 public class ReviewService {
 
     private final ReviewRepository reviewRepository;
-    private final OrderRepository orderRepository;
-    private final OrderItemRepository orderItemRepository;
+    private final ApiService apiService;
 
     public ReviewService(
             ReviewRepository reviewRepository,
-            OrderRepository orderRepository,
-            OrderItemRepository orderItemRepository) {
+            ApiService apiService) {
         this.reviewRepository = reviewRepository;
-        this.orderRepository = orderRepository;
-        this.orderItemRepository = orderItemRepository;
+        this.apiService = apiService;
     }
 
     public Review addReview(Long productId, String authorName, Integer rating, String comment) {
         // NB: в текущей "грязной" версии verifiedPurchase не используется дальше,
         // но сам факт прямого обращения к order-репозиториям отсюда - и есть
         // намеренная связанность, которую нужно устранить.
-        boolean verifiedPurchase = !orderRepository.findAll().isEmpty()
-                && !orderItemRepository.findAll().isEmpty();
+        boolean verifiedPurchase = apiService.checkExistingInOrderService();
         Review review = new Review(productId, authorName == null ? "anonymous" : authorName, rating, comment);
         return reviewRepository.save(review);
     }

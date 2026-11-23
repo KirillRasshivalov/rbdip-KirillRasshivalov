@@ -73,4 +73,9 @@ public class OrderService {
 
         return order;
     }
+
+    @Transactional
+    public boolean verifyOrderExists() {
+        return !orderRepository.findAll().isEmpty() && !orderItemRepository.findAll().isEmpty();
+    }
 }
