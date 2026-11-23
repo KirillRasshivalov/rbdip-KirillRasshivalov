@@ -31,6 +31,7 @@ public class OrderController {
 
     @GetMapping("/orders")
     public List<OrderView> listOrders() {
+
         return orderRepository.findAllWithItems().stream()
                 .map(order -> {
                     List<OrderItemView> itemViews = order.getItems().stream()
