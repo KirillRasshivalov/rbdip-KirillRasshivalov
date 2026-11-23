@@ -9,8 +9,11 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Заказ ссылается на нормализованную сущность Customer (ЛР2).
@@ -38,6 +41,10 @@ public class Order {
 
     @Column(name = "created_at", nullable = false)
     private final Instant createdAt = Instant.now();
+
+    @OneToMany(fetch = FetchType.LAZY)
+    @JoinColumn(name = "order_id", insertable = false, updatable = false)
+    private List<OrderItem> items = new ArrayList<>();
 
     protected Order() {
         // for JPA
@@ -74,6 +81,10 @@ public class Order {
 
     public Instant getCreatedAt() {
         return createdAt;
+    }
+
+    public List<OrderItem> getItems() {
+        return items;
     }
 
     public boolean isNew() {
