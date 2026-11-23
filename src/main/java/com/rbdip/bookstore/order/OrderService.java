@@ -58,7 +58,8 @@ public class OrderService {
         String customerType = request.customerType() == null ? CUSTOMER_TYPE_REGULAR : request.customerType();
         BigDecimal total = pricingCalculator.calculateOrderTotal(lineItems, customerType, request.couponCode());
 
-        Customer customer = customerRepository.save(new Customer(
+
+        Customer customer = customerRepository.save(Customer.fromFullName(
                 request.customerFullName(), request.customerAddress(), request.customerPhone()));
         Order order = orderRepository.save(new Order(customer, STATUS_NEW));
 
